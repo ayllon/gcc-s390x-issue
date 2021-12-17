@@ -22,7 +22,7 @@
  * @author Florian Dubath
  */
 #include <cmath>
-
+#include <cassert>
 #include "Real.h"
 #include "CosmologicalDistances.h"
 
@@ -53,6 +53,8 @@ double CosmologicalDistances::transverseComovingDistance(double z, const Cosmolo
     return comoving;
   }
 
+  assert(!std::isnan(parameters.getOmegaK()));
+  assert(parameters.getOmegaK() != 0.);
   double dHOverSqrtOmegaK = hubbleDistance(parameters) / std::sqrt(std::abs(parameters.getOmegaK()));
 
   if (parameters.getOmegaK() > 0) {
