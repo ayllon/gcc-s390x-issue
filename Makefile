@@ -1,14 +1,16 @@
-CXXFLAGS?=-O2 -flto=auto -ffat-lto-objects
+CXXFLAGS?=-flto=auto -ffat-lto-objects -g
 LDFLAGS?=-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now
 
-all: test
+all: test-o1 test-o2
 
-%.o: %.cpp foo.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+test-o1: CosmologicalParameters.cpp CosmologicalDistances.cpp main.cpp
+	$(CXX) $(CXXFLAGS) -O1 $^ -o $@
 
-test: CosmologicalParameters.o CosmologicalDistances.o main.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+test-o2: CosmologicalParameters.cpp CosmologicalDistances.cpp main.cpp
+	$(CXX) $(CXXFLAGS) -O2 $^ -o $@
 
 clean:
-	rm -f test *.o
+	rm -f test-o? *.o?
+
+.PHONY: all clean
 
