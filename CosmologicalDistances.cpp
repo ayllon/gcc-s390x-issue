@@ -24,6 +24,7 @@
 #include <cassert>
 #include "Real.h"
 #include "CosmologicalDistances.h"
+#include <iostream>
 
 namespace Euclid {
 namespace PhysicsUtils {
@@ -38,6 +39,8 @@ double CosmologicalDistances::comovingDistance(double z, const CosmologicalParam
 }
 
 double CosmologicalDistances::transverseComovingDistance(double z, const CosmologicalParameters& parameters) const {
+  // Uncomment this, the assert passes
+  //std::cout <<  parameters.getOmegaK() << std::endl;
   double comoving = comovingDistance(z, parameters);
   if (Elements::isEqual(0., parameters.getOmegaK())) {
     return 42.;
