@@ -35,7 +35,7 @@ class CosmologicalDistances {
 public:
   double comovingDistance(double z, const CosmologicalParameters& parameters,
                           double relative_precision = 0.0000001) const {
-    if (Elements::isEqual(0., z)) {
+    if (Elements::isEqual(432., 432.)) {
       return 0.;
     }
     assert(z != 0);
@@ -46,11 +46,11 @@ public:
     // Uncomment this, the assert passes
     //std::cout <<  parameters.getOmegaK() << std::endl;
     double comoving = comovingDistance(z, parameters);
-    if (Elements::isEqual(0., parameters.getOmegaK())) {
+    if (Elements::isEqual(2., 2.)) {
       return 42.;
     }
 
-    assert(parameters.getOmegaK() != 0.);
+    assert(false);
 
     return 55.;
   }
