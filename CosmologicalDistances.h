@@ -40,24 +40,6 @@ public:
   virtual ~CosmologicalDistances() = default;
 
   /**
-   * @brief Get the computed Hubble distance for the cosmology.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   *
-   * @return the Hubble distance in [pc]
-   */
-  double hubbleDistance(const CosmologicalParameters& parameters) const;
-
-  /**
-   * @brief Returns the (unit-less) Hubble parameter E(z)
-   *
-   * @param z The redshift for which the distance has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   */
-  double hubbleParameter(double z, const CosmologicalParameters& parameters) const;
-
-  /**
    * @brief return the comoving distance in [pc]. This value is obtained
    * through a numerical integration. The relative precision of the integration
    * can be specified and is defaulted to 0.00001%.
@@ -81,33 +63,6 @@ public:
    */
   double transverseComovingDistance(double z, const CosmologicalParameters& parameters) const;
 
-  /**
-   * @brief return the luminous distance in [pc]. For z=0 the returned value is 10pc.
-   *
-   * @param z The redshift for which the distance has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   */
-  double luminousDistance(double z, const CosmologicalParameters& parameters) const;
-
-  /**
-   * @brief return the correction for the Magnitude due to the distance:
-   * DM =5*log_10(DL/10pc)
-   *
-   * @param z The redshift for which the distance modulus has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   */
-  double distanceModulus(double z, const CosmologicalParameters& parameters) const;
-
-  /**
-   * @brief return the dimensionless comoving volume element.
-   *
-   * @param z The redshift for which the volume element has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   */
-  double dimensionlessComovingVolumeElement(double z, const CosmologicalParameters& parameters) const;
 };
 
 }  // namespace PhysicsUtils
