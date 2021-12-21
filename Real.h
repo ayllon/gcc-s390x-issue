@@ -84,15 +84,11 @@ using std::numeric_limits;
 
 namespace Elements {
 
-/// Single precision float default maximum unit in the last place
-constexpr std::size_t FLT_DEFAULT_MAX_ULPS{4};
 /// Double precision float default maximum unit in the last place
 constexpr std::size_t DBL_DEFAULT_MAX_ULPS{10};
 
 // For testing purposes only. Rather use the isEqual functions for real
 // life comparison
-/// Single precision float default test tolerance
-ELEMENTS_API extern const double FLT_DEFAULT_TEST_TOLERANCE;
 /// Double precision float default test tolerance
 ELEMENTS_API extern const double DBL_DEFAULT_TEST_TOLERANCE;
 
@@ -102,18 +98,6 @@ public:
   // This prevents the user from using TypeWithSize<N> with incorrect
   // values of N.
   using UInt = void;
-};
-
-// The specialisation for size 4.
-template <>
-class ELEMENTS_API TypeWithSize<4> {
-public:
-  // unsigned int has size 4 in both gcc and MSVC.
-  //
-  // As base/basictypes.h doesn't compile on Windows, we cannot use
-  // uint32, uint64, and etc here.
-  using Int  = int;
-  using UInt = unsigned int;
 };
 
 // The specialisation for size 8.
@@ -126,12 +110,7 @@ public:
 
 template <typename RawType>
 constexpr std::size_t defaultMaxUlps() {
-  return FLT_DEFAULT_MAX_ULPS;
-}
-
-template <>
-constexpr std::size_t defaultMaxUlps<float>() {
-  return FLT_DEFAULT_MAX_ULPS;
+  return DBL_DEFAULT_MAX_ULPS;
 }
 
 template <>
@@ -219,29 +198,6 @@ public:
     m_u.m_value = x;
   }
 
-  // Static methods
-
-  // Reinterprets a bit pattern as a floating-point number.
-  //
-  // This function is needed to test the AlmostEquals() method.
-  static RawType ReinterpretBits(const Bits& bits) {
-    FloatingPoint fp(0);
-    fp.m_u.m_bits = bits;
-    return fp.m_u.m_value;
-  }
-
-  // Returns the floating-point number that represent positive infinity.
-  static RawType Infinity() {
-    return ReinterpretBits(s_exponent_bitmask);
-  }
-
-  // Non-static methods
-
-  // Returns the bits that represents this number.
-  const Bits& bits() const {
-    return m_u.m_bits;
-  }
-
   // Returns the exponent bits of this number.
   Bits exponentBits() const {
     return s_exponent_bitmask & m_u.m_bits;
@@ -250,33 +206,6 @@ public:
   // Returns the fraction bits of this number.
   Bits fractionBits() const {
     return s_fraction_bitmask & m_u.m_bits;
-  }
-
-  // Returns the sign bit of this number.
-  Bits signBit() const {
-    return s_sign_bitmask & m_u.m_bits;
-  }
-
-  // Returns true iff this is NAN (not a number).
-  bool isNan() const {
-    // It's a NAN if the exponent bits are all ones and the fraction
-    // bits are not entirely zeros.
-    return (exponentBits() == s_exponent_bitmask) && (fractionBits() != 0);
-  }
-
-  // Returns true iff this number is at most kMaxUlps ULP's away from
-  // rhs.  In particular, this function:
-  //
-  //   - returns false if either number is (or both are) NAN.
-  //   - treats really large numbers as almost equal to infinity.
-  //   - thinks +0.0 and -0.0 are 0 DLP's apart.
-  bool AlmostEquals(const FloatingPoint& rhs) const {
-    // The IEEE standard says that any comparison operation involving
-    // a NAN must return false.
-    if (isNan() || rhs.isNan()) {
-      return false;
-    }
-    return distanceBetweenSignAndMagnitudeNumbers(m_u.m_bits, rhs.m_u.m_bits) <= m_max_ulps;
   }
 
   // Converts an integer from the sign-and-magnitude representation to
@@ -322,206 +251,22 @@ private:
   FloatingPointUnion m_u;
 };
 
-// Usable AlmostEqual function
-
-template <typename FloatType>
-bool almostEqual2sComplement(ELEMENTS_UNUSED const FloatType& a, ELEMENTS_UNUSED const FloatType& b,
-                             ELEMENTS_UNUSED const std::size_t& max_ulps = 0) {
-  return false;
-}
-
-template <typename RawType>
-bool isNan(const RawType& x) {
-
-  using Bits  = typename TypeWithSize<sizeof(RawType)>::UInt;
-  Bits x_bits = *reinterpret_cast<const Bits*>(&x);
-
-  Bits x_exp_bits  = FloatingPoint<RawType>::s_exponent_bitmask & x_bits;
-  Bits x_frac_bits = FloatingPoint<RawType>::s_fraction_bitmask & x_bits;
-
-  return (x_exp_bits == FloatingPoint<RawType>::s_exponent_bitmask) && (x_frac_bits != 0);
-}
-
 template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
 bool isEqual(const RawType& left, const RawType& right) {
 
   bool is_equal{false};
 
-  if (not(isNan<RawType>(left) or isNan<RawType>(right))) {
-    using Bits  = typename TypeWithSize<sizeof(RawType)>::UInt;
-    Bits l_bits = *reinterpret_cast<const Bits*>(&left);
-    Bits r_bits = *reinterpret_cast<const Bits*>(&right);
-    is_equal    = (FloatingPoint<RawType>::distanceBetweenSignAndMagnitudeNumbers(l_bits, r_bits) <= max_ulps);
-  }
+  using Bits  = typename TypeWithSize<sizeof(RawType)>::UInt;
+  Bits l_bits = *reinterpret_cast<const Bits*>(&left);
+  Bits r_bits = *reinterpret_cast<const Bits*>(&right);
+  is_equal    = (FloatingPoint<RawType>::distanceBetweenSignAndMagnitudeNumbers(l_bits, r_bits) <= max_ulps);
 
   return is_equal;
 }
 
 template <std::size_t max_ulps>
-inline bool isEqual(const float& left, const float& right) {
-  return (isEqual<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
 inline bool isEqual(const double& left, const double& right) {
   return (isEqual<double, max_ulps>(left, right));
-}
-
-template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
-inline bool isNotEqual(const RawType& left, const RawType& right) {
-  return (not isEqual<RawType, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isNotEqual(const float& left, const float& right) {
-  return (isNotEqual<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isNotEqual(const double& left, const double& right) {
-  return (isNotEqual<double, max_ulps>(left, right));
-}
-
-template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
-bool isLess(const RawType& left, const RawType& right) {
-  bool is_less{false};
-
-  if (left < right && (not isEqual<RawType, max_ulps>(left, right))) {
-    is_less = true;
-  }
-
-  return is_less;
-}
-
-template <std::size_t max_ulps>
-inline bool isLess(const float& left, const float& right) {
-  return (isLess<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isLess(const double& left, const double& right) {
-  return (isLess<double, max_ulps>(left, right));
-}
-
-template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
-bool isGreater(const RawType& left, const RawType& right) {
-  bool is_greater{false};
-
-  if (left > right && (not isEqual<RawType, max_ulps>(left, right))) {
-    is_greater = true;
-  }
-
-  return is_greater;
-}
-
-template <std::size_t max_ulps>
-inline bool isGreater(const float& left, const float& right) {
-  return (isGreater<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isGreater(const double& left, const double& right) {
-  return (isGreater<double, max_ulps>(left, right));
-}
-
-template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
-bool isLessOrEqual(const RawType& left, const RawType& right) {
-  bool is_loe{false};
-
-  if (not isGreater<RawType, max_ulps>(left, right)) {
-    is_loe = true;
-  }
-
-  return is_loe;
-}
-
-template <std::size_t max_ulps>
-inline bool isLessOrEqual(const float& left, const float& right) {
-  return (isLessOrEqual<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isLessOrEqual(const double& left, const double& right) {
-  return (isLessOrEqual<double, max_ulps>(left, right));
-}
-
-template <typename RawType, std::size_t max_ulps = defaultMaxUlps<RawType>()>
-bool isGreaterOrEqual(const RawType& left, const RawType& right) {
-  bool is_goe{false};
-
-  if (not isLess<RawType, max_ulps>(left, right)) {
-    is_goe = true;
-  }
-
-  return is_goe;
-}
-
-template <std::size_t max_ulps>
-inline bool isGreaterOrEqual(const float& left, const float& right) {
-  return (isGreaterOrEqual<float, max_ulps>(left, right));
-}
-
-template <std::size_t max_ulps>
-inline bool isGreaterOrEqual(const double& left, const double& right) {
-  return (isGreaterOrEqual<double, max_ulps>(left, right));
-}
-
-/**
- * @brief
- *   This function compare 2 floats with a relative tolerance
- * @details
- *   The comparison is performed by casting the floating point numbers into integers and then compare
- *   their representation with a tolerance for their last bits.
- * @param left
- *   first float number
- * @param right
- *   second float number
- * @param max_ulps
- *   The relative tolerance is expressed as ULPS (units in the last place). They are unit in the last
- *   place of the mantissa. And the recommended default value is 4 for single precision numbers.
- * @return
- *   true if the numbers are equal (or cannot be distinguished) and false otherwise.
- */
-ELEMENTS_API bool almostEqual2sComplement(const float& left, const float& right,
-                                          const int& max_ulps = FLT_DEFAULT_MAX_ULPS);
-/**
- * @brief
- *   This function compare 2 doubles with a relative tolerance
- * @details
- *   The comparison is performed by casting the floating point numbers into integers and then compare
- *   their representation with a tolerance for their last bits.
- * @param left
- *   first double number
- * @param right
- *   second double number
- * @param max_ulps
- *   The relative tolerance is expressed as ULPS (units in the last place). They are unit in the last
- *   place of the mantissa. And the recommended default value is 10 for double precision numbers.
- * @return
- *   true if the numbers are equal (or cannot be distinguished) and false otherwise.
- */
-ELEMENTS_API bool almostEqual2sComplement(const double& left, const double& right,
-                                          const int& max_ulps = DBL_DEFAULT_MAX_ULPS);
-
-/**
- * @brief
- *   This function compares 2 floating point numbers bitwise. These are the strict
- *   equivalent of the "==". They are only here for the example.
- * @param left
- *   right hand number to compare
- * @param right
- *   left hand number to compare
- * @tparam RawType
- *   raw type: ie float or double
- * @return
- *   true if the 2 numbers are bitwise equal
- */
-template <typename RawType>
-ELEMENTS_API bool      realBitWiseEqual(const RawType& left, const RawType& right) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-  return (left == right);
-#pragma GCC diagnostic pop
 }
 
 }  // namespace Elements
