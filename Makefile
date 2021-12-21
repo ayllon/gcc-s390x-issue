@@ -1,4 +1,4 @@
-CXXFLAGS?=-flto=auto -ffat-lto-objects -g
+CXXFLAGS?=-flto -g
 LDFLAGS?=-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now
 
 all: test-o1 test-o2
