@@ -16,16 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/**
- * @file PhysicsUtils/CosmologicalDistances.h
- * @date November 29, 2015
- * @author Florian Dubath
- */
-
 #ifndef PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
 #define PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
 
 #include "CosmologicalParameters.h"
+#include "Real.h"
+#include <cassert>
 
 namespace Euclid {
 namespace PhysicsUtils {
@@ -37,32 +33,27 @@ namespace PhysicsUtils {
  */
 class CosmologicalDistances {
 public:
-  virtual ~CosmologicalDistances() = default;
-
-  /**
-   * @brief return the comoving distance in [pc]. This value is obtained
-   * through a numerical integration. The relative precision of the integration
-   * can be specified and is defaulted to 0.00001%.
-   *
-   * @param z The redshift for which the distance has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   *
-   * @param relative_precision The requested precision.
-   *
-   */
   double comovingDistance(double z, const CosmologicalParameters& parameters,
-                          double relative_precision = 0.0000001) const;
+                          double relative_precision = 0.0000001) const {
+    if (Elements::isEqual(0., z)) {
+      return 0.;
+    }
+    assert(z != 0);
+    return 123.;
+  }
 
-  /**
-   * @brief return the transverse comoving distance in [pc]
-   *
-   * @param z The redshift for which the distance has to be computed.
-   *
-   * @param parameters The cosmological parameters the distance has to be computed for.
-   */
-  double transverseComovingDistance(double z, const CosmologicalParameters& parameters) const;
+  double transverseComovingDistance(double z, const CosmologicalParameters& parameters) const {
+    // Uncomment this, the assert passes
+    //std::cout <<  parameters.getOmegaK() << std::endl;
+    double comoving = comovingDistance(z, parameters);
+    if (Elements::isEqual(0., parameters.getOmegaK())) {
+      return 42.;
+    }
 
+    assert(parameters.getOmegaK() != 0.);
+
+    return 55.;
+  }
 };
 
 }  // namespace PhysicsUtils
