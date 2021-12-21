@@ -1,4 +1,4 @@
-CXXFLAGS?=-flto -g
+CXXFLAGS?=-flto -g -save-temps
 LDFLAGS?=-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now
 
 all: test-o1 test-o2
