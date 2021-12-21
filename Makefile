@@ -3,10 +3,10 @@ LDFLAGS?=-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now
 
 all: test-o1 test-o2
 
-test-o1: CosmologicalParameters.cpp CosmologicalDistances.cpp main.cpp
+test-o1: main.cpp
 	$(CXX) $(CXXFLAGS) -O1 $^ -o $@
 
-test-o2: CosmologicalParameters.cpp CosmologicalDistances.cpp main.cpp
+test-o2: main.cpp
 	$(CXX) $(CXXFLAGS) -O2 $^ -o $@
 
 clean:
