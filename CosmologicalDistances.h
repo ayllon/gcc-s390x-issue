@@ -16,14 +16,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
-#define PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
+#ifndef COSMOLOGICALDISTANCES_H_
+#define COSMOLOGICALDISTANCES_H_
 
 #include "Real.h"
 #include <cassert>
-
-namespace Euclid {
-namespace PhysicsUtils {
 
 /**
  * @class CosmologicalDistance
@@ -31,26 +28,19 @@ namespace PhysicsUtils {
  * @brief Compute the distances according to it. See
  * http://xxx.lanl.gov/abs/astro-ph/9905116
  */
-class CosmologicalDistances {
-public:
-  double comovingDistance(double z) const {
-    if (Elements::isEqual(432., 432.)) {
-      return 0.;
-    }
-    assert(z != 0);
-    return 123.;
+double comovingDistance(double z) {
+  if (Elements::isEqual(432., 432.)) {
+    return 0.;
   }
+  assert(false);
+}
 
-  double
-  transverseComovingDistance(double z) const {
-    double comoving = comovingDistance(z);
-    if (Elements::isEqual(2., 2.)) {
-      return 42.;
-    }
-    assert(false);
+double transverseComovingDistance(double z) {
+  double comoving = comovingDistance(z);
+  if (Elements::isEqual(2., 2.)) {
+    return 42.;
   }
-};
+  assert(false);
+}
 
-} // namespace PhysicsUtils
-} // namespace Euclid
-#endif /* PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_ */
+#endif
