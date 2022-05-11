@@ -1,2 +1,9 @@
+*.0
+*.asm
+*.ii
 *.o
+*.out
+*.res
+*.s
 test-o?
+test-o?.*
