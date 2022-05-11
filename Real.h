@@ -2,7 +2,8 @@
 #define ELEMENTSKERNEL_ELEMENTSKERNEL_REAL_H_
 
 #include <cassert>
-#include <cmath>       // for round
+#include <cmath> // for round
+#include <cstdint>
 #include <limits>      // for numeric_limits
 #include <type_traits> // for is_floating_point
 
@@ -15,19 +16,6 @@ namespace Elements {
 
 /// Double precision float default maximum unit in the last place
 constexpr std::size_t DBL_DEFAULT_MAX_ULPS{10};
-
-template <std::size_t size> class ELEMENTS_API TypeWithSize {
-public:
-  // This prevents the user from using TypeWithSize<N> with incorrect
-  // values of N.
-  using UInt = void;
-};
-
-// The specialisation for size 8.
-template <> class ELEMENTS_API TypeWithSize<8> {
-public:
-  using UInt = unsigned long long; // NOLINT
-};
 
 // This template class represents an IEEE floating-point number
 // (either single-precision or double-precision, depending on the
@@ -43,14 +31,14 @@ public:
 //   The most-significant bit being the leftmost, an IEEE
 //   floating-point looks like
 //
-//     sign_bit exponent_bits fraction_bits
+//     sign_bit exponent_uint64_t fraction_uint64_t
 //
 //   Here, sign_bit is a single bit that designates the sign of the
 //   number.
 //
-//   For float, there are 8 exponent bits and 23 fraction bits.
+//   For float, there are 8 exponent uint64_t and 23 fraction uint64_t.
 //
-//   For double, there are 11 exponent bits and 52 fraction bits.
+//   For double, there are 11 exponent uint64_t and 52 fraction uint64_t.
 //
 //   More details can be found at
 //   http://en.wikipedia.org/wiki/IEEE_floating-point_standard.
@@ -60,17 +48,13 @@ public:
 //   double: the raw floating-point type (either float or double)
 class ELEMENTS_API FloatingPoint {
 public:
-  // Defines the unsigned integer type that has the same size as the
-  // floating point number.
-  using Bits = typename TypeWithSize<sizeof(double)>::UInt;
-
   // Constants.
 
-  // # of bits in a number.
+  // # of uint64_t in a number.
   static const std::size_t s_bitcount = 8 * sizeof(double);
 
   // The mask for the sign bit.
-  static const Bits s_sign_bitmask = static_cast<Bits>(1) << (s_bitcount - 1);
+  static const uint64_t s_sign_bitmask = static_cast<uint64_t>(1) << (s_bitcount - 1);
 
   // Converts an integer from the sign-and-magnitude representation to
   // the biased representation.  More precisely, let N be 2 to the
@@ -87,7 +71,7 @@ public:
   //
   // Read http://en.wikipedia.org/wiki/Signed_number_representations
   // for more details on signed number representations.
-  static Bits signAndMagnitudeToBiased(const Bits &sam) {
+  static uint64_t signAndMagnitudeToBiased(const uint64_t &sam) {
     if (s_sign_bitmask & sam) {
       // sam represents a negative number.
       return ~sam + 1;
@@ -99,10 +83,10 @@ public:
 
   // Given two numbers in the sign-and-magnitude representation,
   // returns the distance between them as an unsigned number.
-  static Bits distanceBetweenSignAndMagnitudeNumbers(const Bits &sam1,
-                                                     const Bits &sam2) {
-    const Bits biased1 = signAndMagnitudeToBiased(sam1);
-    const Bits biased2 = signAndMagnitudeToBiased(sam2);
+  static uint64_t distanceBetweenSignAndMagnitudeNumbers(const uint64_t &sam1,
+                                                     const uint64_t &sam2) {
+    const uint64_t biased1 = signAndMagnitudeToBiased(sam1);
+    const uint64_t biased2 = signAndMagnitudeToBiased(sam2);
     return (biased1 >= biased2) ? (biased1 - biased2) : (biased2 - biased1);
   }
 
@@ -110,12 +94,13 @@ private:
 };
 
 bool isEqual(const double &left, const double &right) {
-  using Bits = typename TypeWithSize<sizeof(double)>::UInt;
-  Bits l_bits = *reinterpret_cast<const Bits *>(&left);
-  Bits r_bits = *reinterpret_cast<const Bits *>(&right);
+  static_assert(sizeof(uint64_t) == sizeof(double));
+
+  uint64_t l_uint64_t = *reinterpret_cast<const uint64_t *>(&left);
+  uint64_t r_uint64_t = *reinterpret_cast<const uint64_t *>(&right);
 
   return FloatingPoint::distanceBetweenSignAndMagnitudeNumbers(
-             l_bits, r_bits) <= DBL_DEFAULT_MAX_ULPS;
+             l_uint64_t, r_uint64_t) <= DBL_DEFAULT_MAX_ULPS;
 }
 
 } // namespace Elements

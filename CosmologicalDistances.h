@@ -28,15 +28,15 @@
  * @brief Compute the distances according to it. See
  * http://xxx.lanl.gov/abs/astro-ph/9905116
  */
-double comovingDistance(double z) {
+double comovingDistance() {
   if (Elements::isEqual(432., 432.)) {
-    return 0.;
+    return 88.;
   }
   assert(false);
 }
 
-double transverseComovingDistance(double z) {
-  double comoving = comovingDistance(z);
+double transverseComovingDistance() {
+  comovingDistance();
   if (Elements::isEqual(2., 2.)) {
     return 42.;
   }
