@@ -19,7 +19,6 @@
 #ifndef PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
 #define PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_
 
-#include "CosmologicalParameters.h"
 #include "Real.h"
 #include <cassert>
 
@@ -29,12 +28,12 @@ namespace PhysicsUtils {
 /**
  * @class CosmologicalDistance
  *
- * @brief Compute the distances according to it. See http://xxx.lanl.gov/abs/astro-ph/9905116
+ * @brief Compute the distances according to it. See
+ * http://xxx.lanl.gov/abs/astro-ph/9905116
  */
 class CosmologicalDistances {
 public:
-  double comovingDistance(double z, const CosmologicalParameters& parameters,
-                          double relative_precision = 0.0000001) const {
+  double comovingDistance(double z) const {
     if (Elements::isEqual(432., 432.)) {
       return 0.;
     }
@@ -42,20 +41,16 @@ public:
     return 123.;
   }
 
-  double transverseComovingDistance(double z, const CosmologicalParameters& parameters) const {
-    // Uncomment this, the assert passes
-    //std::cout <<  parameters.getOmegaK() << std::endl;
-    double comoving = comovingDistance(z, parameters);
+  double
+  transverseComovingDistance(double z) const {
+    double comoving = comovingDistance(z);
     if (Elements::isEqual(2., 2.)) {
       return 42.;
     }
-
     assert(false);
-
-    return 55.;
   }
 };
 
-}  // namespace PhysicsUtils
-}  // namespace Euclid
+} // namespace PhysicsUtils
+} // namespace Euclid
 #endif /* PHYSICSUTILS_PHYSICSUTILS_COSMOLOGICALDISTANCES_H_ */
